@@ -1,0 +1,28 @@
+[package]
+name = "calories-calc"
+version = "0.1.0"
+authors = ["Xidorn Quan <me@upsuper.org>"]
+edition = "2018"
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+combine = "3.5.2"
+lazy_static = "1.1.0"
+wasm-bindgen = { git = "https://github.com/rustwasm/wasm-bindgen" }
+
+[dependencies.web-sys]
+git = "https://github.com/rustwasm/wasm-bindgen"
+features = [
+    "Document",
+    "DocumentFragment",
+    "Element",
+    "Event",
+    "EventTarget",
+    "HtmlElement",
+    "HtmlInputElement",
+    "HtmlTemplateElement",
+    "Node",
+    "Window",
+]
