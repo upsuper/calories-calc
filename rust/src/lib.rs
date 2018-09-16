@@ -4,8 +4,8 @@ mod helpers;
 use crate::expr::{Expr, Unit};
 use crate::helpers::*;
 use lazy_static::lazy_static;
-use std::mem::transmute;
 use wasm_bindgen::prelude::*;
+use wasm_bindgen::JsCast;
 use web_sys::{
     Document, DocumentFragment, Element, Event, HtmlInputElement, HtmlTemplateElement, Node, Window,
 };
@@ -14,8 +14,7 @@ const UNIT: Unit = Unit::Kj;
 
 macro_rules! typed_element {
     ($id:expr => $ty:ty) => {{
-        let elem = DOC.get_element_by_id($id).unwrap();
-        unsafe { transmute::<_, $ty>(elem) }
+        DOC.get_element_by_id($id).unwrap().unchecked_into::<$ty>()
     }};
 }
 
@@ -30,7 +29,7 @@ lazy_static! {
 #[wasm_bindgen]
 pub fn handle_click(evt: Event) {
     let target = match evt.target() {
-        Some(target) => unsafe { transmute::<_, Element>(target) },
+        Some(target) => target.unchecked_into::<Element>(),
         None => return,
     };
     if target.id() == "add" {
@@ -50,8 +49,8 @@ fn add_item() {
 
     let new_record = DOC
         .import_node_with_deep(RECORD.content().as_ref(), true)
-        .unwrap();
-    let new_record = unsafe { transmute::<_, DocumentFragment>(new_record) };
+        .unwrap()
+        .unchecked_into::<DocumentFragment>();
     let expr_elem = new_record.query_selector_infallible(".expr");
     Node::from(expr_elem).set_text_content(Some(&format!("{}", expr)));
     let value_elem = new_record.query_selector_infallible(".value");
