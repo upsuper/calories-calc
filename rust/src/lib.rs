@@ -7,7 +7,8 @@ use lazy_static::lazy_static;
 use wasm_bindgen::prelude::*;
 use wasm_bindgen::JsCast;
 use web_sys::{
-    Document, DocumentFragment, Element, Event, HtmlInputElement, HtmlTemplateElement, Node, Window,
+    Document, DocumentFragment, Element, Event, HtmlElement, HtmlInputElement, HtmlTemplateElement,
+    Node, Window,
 };
 
 const UNIT: Unit = Unit::Kj;
@@ -41,6 +42,8 @@ pub fn handle_click(evt: Event) {
 
 fn add_item() {
     let input = INPUT.value();
+    INPUT.set_value("");
+    (INPUT.as_ref() as &HtmlElement).focus().unwrap();
     let expr = match Expr::parse(&input) {
         Ok(expr) => expr,
         Err(_) => unimplemented!(),
@@ -55,7 +58,9 @@ fn add_item() {
     Node::from(expr_elem).set_text_content(Some(&format!("{}", expr)));
     let value_elem = new_record.query_selector_infallible(".value");
     Node::from(value_elem).set_text_content(Some(&format!("{:.0} {}", value, UNIT)));
-    RECORDS.append_child(new_record.as_ref()).unwrap();
+    RECORDS
+        .insert_before(new_record.as_ref(), RECORDS.first_child().as_ref())
+        .unwrap();
     update_total(value);
 }
 
