@@ -42,12 +42,16 @@ pub fn handle_click(evt: Event) {
 
 fn add_item() {
     let input = INPUT.value();
-    INPUT.set_value("");
     (INPUT.as_ref() as &HtmlElement).focus().unwrap();
     let expr = match Expr::parse(&input) {
         Ok(expr) => expr,
-        Err(_) => unimplemented!(),
+        Err(_) => {
+            (INPUT.as_ref() as &Element).set_class_name("error");
+            return;
+        }
     };
+    (INPUT.as_ref() as &Element).set_class_name("");
+    INPUT.set_value("");
     let value = expr.calc(UNIT);
 
     let new_record = DOC

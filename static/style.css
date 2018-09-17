@@ -17,6 +17,9 @@ input, button {
 #input {
   width: 100%;
 }
+#input.error {
+  border: 1px solid red;
+}
 button {
   padding: 0;
   background: white;
