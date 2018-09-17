@@ -52,7 +52,7 @@ fn add_item() {
     };
     (INPUT.as_ref() as &Element).set_class_name("");
     INPUT.set_value("");
-    let value = expr.calc(UNIT);
+    let value = expr.calc(UNIT).round();
 
     let new_record = DOC
         .import_node_with_deep(RECORD.content().as_ref(), true)
@@ -61,7 +61,7 @@ fn add_item() {
     let expr_elem = new_record.query_selector_infallible(".expr");
     Node::from(expr_elem).set_text_content(Some(&format!("{}", expr)));
     let value_elem = new_record.query_selector_infallible(".value");
-    Node::from(value_elem).set_text_content(Some(&format!("{:.0} {}", value, UNIT)));
+    Node::from(value_elem).set_text_content(Some(&format!("{} {}", value, UNIT)));
     RECORDS
         .insert_before(new_record.as_ref(), RECORDS.first_child().as_ref())
         .unwrap();
