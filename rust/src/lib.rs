@@ -7,8 +7,8 @@ use lazy_static::lazy_static;
 use wasm_bindgen::prelude::*;
 use wasm_bindgen::JsCast;
 use web_sys::{
-    Document, DocumentFragment, Element, Event, HtmlElement, HtmlInputElement, HtmlTemplateElement,
-    Node, Window,
+    Document, DocumentFragment, Element, Event, EventTarget, HtmlElement, HtmlInputElement,
+    HtmlTemplateElement, Node, Window,
 };
 
 const UNIT: Unit = Unit::Kj;
@@ -27,17 +27,40 @@ lazy_static! {
     static ref TOTAL: Node = DOC.get_element_by_id("total").unwrap().into();
 }
 
+macro_rules! add_listener {
+    (($target:expr, $type:expr) => |$evt:ident| $block:block) => {{
+        let func: Box<dyn FnMut(_)> = Box::new(|$evt: Event| $block);
+        let closure = Closure::wrap(func);
+        ($target.as_ref() as &EventTarget)
+            .add_event_listener_with_callback($type, closure.as_ref().unchecked_ref())
+            .unwrap();
+        closure.forget();
+    }};
+}
+
 #[wasm_bindgen]
-pub fn handle_click(evt: Event) {
-    let target = match evt.target() {
-        Some(target) => target.unchecked_into::<Element>(),
-        None => return,
-    };
-    if target.id() == "add" {
-        add_item();
-    } else if target.class_name() == "remove" {
-        remove_item(target.closest("tr").unwrap().unwrap());
+pub fn init() {
+    if DOC.ready_state() != "loading" {
+        add_event_listeners();
+    } else {
+        add_listener!((DOC, "DOMContentLoaded") => |_evt| {
+            add_event_listeners();
+        });
     }
+}
+
+fn add_event_listeners() {
+    add_listener!((DOC.document_element().unwrap(), "click") => |evt| {
+        let target = match evt.target() {
+            Some(target) => target.unchecked_into::<Element>(),
+            None => return,
+        };
+        if target.id() == "add" {
+            add_item();
+        } else if target.class_name() == "remove" {
+            remove_item(target.closest("tr").unwrap().unwrap());
+        }
+    });
 }
 
 fn add_item() {
