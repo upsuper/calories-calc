@@ -23,6 +23,8 @@ features = [
     "HtmlElement",
     "HtmlInputElement",
     "HtmlTemplateElement",
+    "KeyboardEvent",
     "Node",
+    "UiEvent",
     "Window",
 ]

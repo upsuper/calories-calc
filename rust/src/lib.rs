@@ -8,7 +8,7 @@ use wasm_bindgen::prelude::*;
 use wasm_bindgen::JsCast;
 use web_sys::{
     Document, DocumentFragment, Element, Event, EventTarget, HtmlElement, HtmlInputElement,
-    HtmlTemplateElement, Node, Window,
+    HtmlTemplateElement, KeyboardEvent, Node, Window,
 };
 
 const UNIT: Unit = Unit::Kj;
@@ -59,6 +59,12 @@ fn add_event_listeners() {
             add_item();
         } else if target.class_name() == "remove" {
             remove_item(target.closest("tr").unwrap().unwrap());
+        }
+    });
+    add_listener!((INPUT, "keypress") => |evt| {
+        let evt: &KeyboardEvent = evt.unchecked_ref();
+        if evt.key() == "Enter" {
+            add_item();
         }
     });
 }
