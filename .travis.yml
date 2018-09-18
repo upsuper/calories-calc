@@ -4,7 +4,6 @@ rust:
   - nightly
 
 install:
-  - export PATH="$PATH:$HOME/.cargo/bin"
   - rustup target add --toolchain=nightly wasm32-unknown-unknown
 
 script:
