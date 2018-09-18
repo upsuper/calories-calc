@@ -159,6 +159,40 @@ mod tests {
                 ].into_boxed_slice(),
             })
         );
+        assert_eq!(
+            Expr::parse("-17.7kcal/-10*-3"),
+            Ok(Expr {
+                base: -17.7,
+                unit: Unit::Kcal,
+                factors: vec![
+                    Factor {
+                        op: Operator::Divide,
+                        val: -10.,
+                    },
+                    Factor {
+                        op: Operator::Multiply,
+                        val: -3.,
+                    },
+                ].into_boxed_slice(),
+            })
+        );
+        assert_eq!(
+            Expr::parse("  -15kj * -7 / -2  "),
+            Ok(Expr {
+                base: -15.,
+                unit: Unit::Kj,
+                factors: vec![
+                    Factor {
+                        op: Operator::Multiply,
+                        val: -7.,
+                    },
+                    Factor {
+                        op: Operator::Divide,
+                        val: -2.,
+                    },
+                ].into_boxed_slice(),
+            })
+        );
     }
 
     #[test]

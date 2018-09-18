@@ -33,6 +33,7 @@ pub fn expr<'a>() -> impl Parser<Input = &'a str, Output = Expr> {
 
 fn float<'a>() -> impl Parser<Input = &'a str, Output = f32> {
     recognize((
+        optional(item('-')),
         skip_many1(digit()),
         optional((item('.'), skip_many(digit()))),
     )).and_then(|s: &str| s.parse().map_err(|_| StringStreamError::UnexpectedParse))
