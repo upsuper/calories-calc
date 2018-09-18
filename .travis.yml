@@ -3,6 +3,10 @@ language: rust
 rust:
   - nightly
 
+install:
+  - export PATH="$PATH:$HOME/.cargo/bin"
+  - rustup target add --toolchain=nightly wasm32-unknown-unknown
+
 script:
   - make test
   - make release
