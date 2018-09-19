@@ -11,18 +11,16 @@ use web_sys::{
 
 const UNIT: Unit = Unit::Kj;
 
-macro_rules! typed_element {
-    ($id:expr => $ty:ty) => {{
-        DOC.get_element_by_id($id).unwrap().unchecked_into::<$ty>()
-    }};
-}
-
 lazy_static! {
     static ref DOC: Document = Window::document().unwrap();
-    static ref INPUT: HtmlInputElement = typed_element!("input" => HtmlInputElement);
-    static ref RECORDS: Node = DOC.get_element_by_id("records").unwrap().into();
-    static ref RECORD: HtmlTemplateElement = typed_element!("record" => HtmlTemplateElement);
-    static ref TOTAL: Node = DOC.get_element_by_id("total").unwrap().into();
+    static ref INPUT: HtmlInputElement = q("#input").unchecked_into();
+    static ref RECORDS: Node = q("#records").into();
+    static ref RECORD: HtmlTemplateElement = q("#record").unchecked_into();
+    static ref TOTAL: Node = q("#total").into();
+}
+
+fn q(query: &str) -> Element {
+    DOC.query_selector(query).unwrap().unwrap()
 }
 
 macro_rules! add_listener {
@@ -49,8 +47,8 @@ pub fn init() -> Result<(), JsValue> {
 
 fn add_event_listeners() -> Result<(), JsValue> {
     add_listener!((DOC.document_element().unwrap(), "click") => |evt| {
-        let target = match evt.target() {
-            Some(target) => target.unchecked_into::<Element>(),
+        let target: Element = match evt.target() {
+            Some(target) => target.unchecked_into(),
             None => return Ok(()),
         };
         if target.id() == "add" {
@@ -84,9 +82,9 @@ fn add_item() -> Result<(), JsValue> {
     INPUT.set_value("");
     let value = expr.calc(UNIT).round();
 
-    let new_record = DOC
+    let new_record: DocumentFragment = DOC
         .import_node_with_deep(RECORD.content().as_ref(), true)?
-        .unchecked_into::<DocumentFragment>();
+        .unchecked_into();
     let expr_elem = new_record.query_selector(".expr")?.unwrap();
     Node::from(expr_elem).set_text_content(Some(&format!("{}", expr)));
     let value_elem = new_record.query_selector(".value")?.unwrap();
