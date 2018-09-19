@@ -9,10 +9,12 @@ crate-type = ["cdylib"]
 
 [dependencies]
 combine = "3.5.2"
+
+[target.'cfg(target_arch = "wasm32")'.dependencies]
 lazy_static = "1.1.0"
 wasm-bindgen = { git = "https://github.com/rustwasm/wasm-bindgen" }
 
-[dependencies.web-sys]
+[target.'cfg(target_arch = "wasm32")'.dependencies.web-sys]
 git = "https://github.com/rustwasm/wasm-bindgen"
 features = [
     "Document",
