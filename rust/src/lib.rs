@@ -6,13 +6,14 @@ use wasm_bindgen::prelude::*;
 use wasm_bindgen::JsCast;
 use web_sys::{
     Document, DocumentFragment, Element, Event, EventTarget, HtmlElement, HtmlInputElement,
-    HtmlTemplateElement, KeyboardEvent, Node, Window,
+    HtmlTemplateElement, KeyboardEvent, Node, Window, window,
 };
 
 const UNIT: Unit = Unit::Kj;
 
 lazy_static! {
-    static ref DOC: Document = Window::document().unwrap();
+    static ref WIN: Window = window().unwrap();
+    static ref DOC: Document = WIN.document().unwrap();
     static ref INPUT: HtmlInputElement = q("#input").unchecked_into();
     static ref RECORDS: Node = q("#records").into();
     static ref RECORD: HtmlTemplateElement = q("#record").unchecked_into();
