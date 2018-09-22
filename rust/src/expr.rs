@@ -41,6 +41,25 @@ impl Expr {
             (Unit::Kcal, Unit::Kj) => result * KJ_PER_KCAL,
         }
     }
+
+    pub fn adjust_factor(&mut self, delta: f32) {
+        let mut new_factor = None;
+        if let Some(mut poped_factor) = self.factors.pop() {
+            if poped_factor.op == Operator::Multiply {
+                poped_factor.val += delta;
+                new_factor = Some(poped_factor);
+            } else {
+                self.factors.push(poped_factor);
+            }
+        }
+        let new_factor = new_factor.unwrap_or(Factor {
+            op: Operator::Multiply,
+            val: delta + 1.,
+        });
+        if new_factor.val != 1. {
+            self.factors.push(new_factor);
+        }
+    }
 }
 
 impl Display for Expr {
@@ -136,5 +155,18 @@ mod tests {
         assert_eq!(expr!((15.) Kcal).calc(Unit::Kj), 15. * KJ_PER_KCAL);
         assert_eq!(expr!((17.7) Kcal / (10.) * (3.)).calc(Unit::Kcal), 17.7 / 10. * 3.);
         assert_eq!(expr!((15.) Kj * (7.) / (9.5)).calc(Unit::Kj), 15. * 7. / 9.5);
+    }
+
+    #[test]
+    fn expr_adjust_factor() {
+        fn adjusted(mut expr: Expr, delta: f32) -> Expr {
+            expr.adjust_factor(delta);
+            expr
+        }
+        assert_eq!(adjusted(expr!((15.) Kj), 1.5), expr!((15.) Kj * (2.5)));
+        assert_eq!(adjusted(expr!((50.2) Kcal), 2.), expr!((50.2) Kcal * (3.)));
+        assert_eq!(adjusted(expr!((17.7) Kcal / (10.)), 1.1), expr!((17.7) Kcal / (10.) * (2.1)));
+        assert_eq!(adjusted(expr!((15.) Kj * (7.)), 9.), expr!((15.) Kj * (16.)));
+        assert_eq!(adjusted(expr!((15.) Kj * (2.)), -1.), expr!((15.) Kj));
     }
 }

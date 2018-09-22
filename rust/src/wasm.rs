@@ -51,11 +51,14 @@ fn add_event_listeners() -> Result<(), JsValue> {
             None => return Ok(()),
         };
         if target.id() == "add" {
-            add_item()?;
-        } else if target.class_name() == "remove" {
-            remove_item(target.closest("tr")?.unwrap())?;
+            return add_item();
         }
-        Ok(())
+        let class_name = target.class_name();
+        match class_name.as_str() {
+            "inc" => increase_item(target.closest("tr")?.unwrap()),
+            "dec" => decrease_item(target.closest("tr")?.unwrap()),
+            _ => Ok(()),
+        }
     })?;
     add_listener!((INPUT, "keypress") => |evt| {
         let evt: &KeyboardEvent = evt.unchecked_ref();
@@ -93,12 +96,32 @@ fn add_item() -> Result<(), JsValue> {
     Ok(())
 }
 
-fn remove_item(row: Element) -> Result<(), JsValue> {
-    let value_elem = row.query_selector(".value")?.unwrap();
-    let value = Node::from(value_elem).text_content().unwrap();
+fn increase_item(row: Element) -> Result<(), JsValue> {
+    adjust_item(row, 1.0)
+}
+
+fn decrease_item(row: Element) -> Result<(), JsValue> {
+    adjust_item(row, -1.0)
+}
+
+fn adjust_item(row: Element, delta: f32) -> Result<(), JsValue> {
+    let expr_elem = Node::from(row.query_selector(".expr")?.unwrap());
+    let expr = expr_elem.text_content().unwrap();
+    let mut expr = Expr::parse(&expr).unwrap();
+    expr.adjust_factor(delta);
+    expr_elem.set_text_content(Some(&format!("{}", expr)));
+
+    let value_elem = Node::from(row.query_selector(".value")?.unwrap());
+    let value = value_elem.text_content().unwrap();
     let value = Expr::parse(&value).unwrap().calc(UNIT);
-    row.remove();
     update_total(-value);
+    let value = expr.calc(UNIT).round();
+    if value == 0.0 {
+        row.remove();
+    } else {
+        value_elem.set_text_content(Some(&format!("{} {}", value, UNIT)));
+        update_total(value);
+    }
     Ok(())
 }
 
@@ -106,5 +129,5 @@ fn update_total(diff: f32) {
     let current_total = TOTAL.text_content().unwrap();
     let current_total = Expr::parse(&current_total).unwrap().calc(UNIT);
     let new_total = current_total + diff;
-    TOTAL.set_text_content(Some(&format!("{:.0} {}", new_total, UNIT)));
+    TOTAL.set_text_content(Some(&format!("{} {}", new_total, UNIT)));
 }

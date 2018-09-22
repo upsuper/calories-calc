@@ -5,8 +5,8 @@ table {
 table, input {
   text-align: right;
 }
-#expr_col {
-  width: 100%;
+#op_col {
+  width: calc(3.6em + 2ch);
 }
 input, button {
   border: 1px solid #ddd;
@@ -27,4 +27,7 @@ button {
 }
 input, #records td:first-child, #total {
   padding-right: 1em;
+}
+td:last-child {
+  text-align: left;
 }
