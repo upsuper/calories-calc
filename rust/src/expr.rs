@@ -119,8 +119,12 @@ mod tests {
     use super::*;
 
     macro_rules! op {
-        (*) => { Operator::Multiply };
-        (/) => { Operator::Divide };
+        (*) => {
+            Operator::Multiply
+        };
+        (/) => {
+            Operator::Divide
+        };
     }
     macro_rules! expr {
         (($base:expr) $unit:ident $($op:tt ($val:expr))*) => {
@@ -142,10 +146,22 @@ mod tests {
         assert_eq!(Expr::parse("15kj"), Ok(expr!((15.) Kj)));
         assert_eq!(Expr::parse("50.2kJ"), Ok(expr!((50.2) Kj)));
         assert_eq!(Expr::parse("   15  kcal  "), Ok(expr!((15.) Kcal)));
-        assert_eq!(Expr::parse("17.7kcal/10*3"), Ok(expr!((17.7) Kcal / (10.) * (3.))));
-        assert_eq!(Expr::parse("  15 KJ * 7  / 9.5 "), Ok(expr!((15.) Kj * (7.) / (9.5))));
-        assert_eq!(Expr::parse("-17.7kcal/-10*-3"), Ok(expr!((-17.7) Kcal / (-10.) * (-3.))));
-        assert_eq!(Expr::parse("  -15kj * -7 / -2  "), Ok(expr!((-15.) Kj * (-7.) / (-2.))));
+        assert_eq!(
+            Expr::parse("17.7kcal/10*3"),
+            Ok(expr!((17.7) Kcal / (10.) * (3.)))
+        );
+        assert_eq!(
+            Expr::parse("  15 KJ * 7  / 9.5 "),
+            Ok(expr!((15.) Kj * (7.) / (9.5)))
+        );
+        assert_eq!(
+            Expr::parse("-17.7kcal/-10*-3"),
+            Ok(expr!((-17.7) Kcal / (-10.) * (-3.)))
+        );
+        assert_eq!(
+            Expr::parse("  -15kj * -7 / -2  "),
+            Ok(expr!((-15.) Kj * (-7.) / (-2.)))
+        );
     }
 
     #[test]
@@ -153,8 +169,14 @@ mod tests {
         assert_eq!(expr!((15.) Kj).calc(Unit::Kj), 15.);
         assert_eq!(expr!((50.2) Kj).calc(Unit::Kcal), 50.2 / KJ_PER_KCAL);
         assert_eq!(expr!((15.) Kcal).calc(Unit::Kj), 15. * KJ_PER_KCAL);
-        assert_eq!(expr!((17.7) Kcal / (10.) * (3.)).calc(Unit::Kcal), 17.7 / 10. * 3.);
-        assert_eq!(expr!((15.) Kj * (7.) / (9.5)).calc(Unit::Kj), 15. * 7. / 9.5);
+        assert_eq!(
+            expr!((17.7) Kcal / (10.) * (3.)).calc(Unit::Kcal),
+            17.7 / 10. * 3.
+        );
+        assert_eq!(
+            expr!((15.) Kj * (7.) / (9.5)).calc(Unit::Kj),
+            15. * 7. / 9.5
+        );
     }
 
     #[test]
@@ -165,8 +187,14 @@ mod tests {
         }
         assert_eq!(adjusted(expr!((15.) Kj), 1.5), expr!((15.) Kj * (2.5)));
         assert_eq!(adjusted(expr!((50.2) Kcal), 2.), expr!((50.2) Kcal * (3.)));
-        assert_eq!(adjusted(expr!((17.7) Kcal / (10.)), 1.1), expr!((17.7) Kcal / (10.) * (2.1)));
-        assert_eq!(adjusted(expr!((15.) Kj * (7.)), 9.), expr!((15.) Kj * (16.)));
+        assert_eq!(
+            adjusted(expr!((17.7) Kcal / (10.)), 1.1),
+            expr!((17.7) Kcal / (10.) * (2.1))
+        );
+        assert_eq!(
+            adjusted(expr!((15.) Kj * (7.)), 9.),
+            expr!((15.) Kj * (16.))
+        );
         assert_eq!(adjusted(expr!((15.) Kj * (2.)), -1.), expr!((15.) Kj));
     }
 }

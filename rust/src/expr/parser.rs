@@ -21,12 +21,10 @@ pub fn expr<'a>() -> impl Parser<Input = &'a str, Output = Expr> {
         spaces(),
         many::<Vec<_>, _>((factor(), spaces()).map(|(f, _)| f)),
     )
-        .map(|(_, base, _, unit, _, factors)| {
-            Expr {
-                base,
-                unit,
-                factors,
-            }
+        .map(|(_, base, _, unit, _, factors)| Expr {
+            base,
+            unit,
+            factors,
         })
 }
 

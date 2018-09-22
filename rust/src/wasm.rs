@@ -3,8 +3,8 @@ use lazy_static::lazy_static;
 use wasm_bindgen::prelude::*;
 use wasm_bindgen::JsCast;
 use web_sys::{
-    Document, DocumentFragment, Element, Event, EventTarget, HtmlElement, HtmlInputElement,
-    HtmlTemplateElement, KeyboardEvent, Node, Window, window,
+    window, Document, DocumentFragment, Element, Event, EventTarget, HtmlElement, HtmlInputElement,
+    HtmlTemplateElement, KeyboardEvent, Node, Window,
 };
 
 const UNIT: Unit = Unit::Kj;
