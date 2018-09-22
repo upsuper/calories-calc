@@ -9,7 +9,7 @@ const KJ_PER_KCAL: f32 = 4.2;
 pub struct Expr {
     base: f32,
     unit: Unit,
-    factors: Box<[Factor]>,
+    factors: Vec<Factor>,
 }
 
 impl Expr {
@@ -113,7 +113,7 @@ mod tests {
                         op: op!($op),
                         val: $val,
                     },)*
-                ].into_boxed_slice(),
+                ],
             }
         };
     }
