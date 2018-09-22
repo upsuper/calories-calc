@@ -56,7 +56,7 @@ impl Expr {
             op: Operator::Multiply,
             val: delta + 1.,
         });
-        if new_factor.val != 1. {
+        if (new_factor.val - 1.).abs() >= 1e-5 {
             self.factors.push(new_factor);
         }
     }

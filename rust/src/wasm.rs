@@ -116,7 +116,7 @@ fn adjust_item(row: Element, delta: f32) -> Result<(), JsValue> {
     let value = Expr::parse(&value).unwrap().calc(UNIT);
     update_total(-value);
     let value = expr.calc(UNIT).round();
-    if value == 0.0 {
+    if (value - 0.0).abs() < 1e-5 {
         row.remove();
     } else {
         value_elem.set_text_content(Some(&format!("{} {}", value, UNIT)));
