@@ -99,161 +99,42 @@ impl Display for Operator {
 mod tests {
     use super::*;
 
+    macro_rules! op {
+        (*) => { Operator::Multiply };
+        (/) => { Operator::Divide };
+    }
+    macro_rules! expr {
+        (($base:expr) $unit:ident $($op:tt ($val:expr))*) => {
+            Expr {
+                base: $base,
+                unit: Unit::$unit,
+                factors: vec![
+                    $(Factor {
+                        op: op!($op),
+                        val: $val,
+                    },)*
+                ].into_boxed_slice(),
+            }
+        };
+    }
+
     #[test]
     fn expr_parsing() {
-        assert_eq!(
-            Expr::parse("15kj"),
-            Ok(Expr {
-                base: 15.,
-                unit: Unit::Kj,
-                factors: Default::default(),
-            })
-        );
-        assert_eq!(
-            Expr::parse("50.2kJ"),
-            Ok(Expr {
-                base: 50.2,
-                unit: Unit::Kj,
-                factors: Default::default(),
-            })
-        );
-        assert_eq!(
-            Expr::parse("   15  kcal  "),
-            Ok(Expr {
-                base: 15.,
-                unit: Unit::Kcal,
-                factors: Default::default(),
-            })
-        );
-        assert_eq!(
-            Expr::parse("17.7kcal/10*3"),
-            Ok(Expr {
-                base: 17.7,
-                unit: Unit::Kcal,
-                factors: vec![
-                    Factor {
-                        op: Operator::Divide,
-                        val: 10.,
-                    },
-                    Factor {
-                        op: Operator::Multiply,
-                        val: 3.,
-                    },
-                ].into_boxed_slice(),
-            })
-        );
-        assert_eq!(
-            Expr::parse("  15 KJ * 7  / 9.5 "),
-            Ok(Expr {
-                base: 15.,
-                unit: Unit::Kj,
-                factors: vec![
-                    Factor {
-                        op: Operator::Multiply,
-                        val: 7.,
-                    },
-                    Factor {
-                        op: Operator::Divide,
-                        val: 9.5,
-                    },
-                ].into_boxed_slice(),
-            })
-        );
-        assert_eq!(
-            Expr::parse("-17.7kcal/-10*-3"),
-            Ok(Expr {
-                base: -17.7,
-                unit: Unit::Kcal,
-                factors: vec![
-                    Factor {
-                        op: Operator::Divide,
-                        val: -10.,
-                    },
-                    Factor {
-                        op: Operator::Multiply,
-                        val: -3.,
-                    },
-                ].into_boxed_slice(),
-            })
-        );
-        assert_eq!(
-            Expr::parse("  -15kj * -7 / -2  "),
-            Ok(Expr {
-                base: -15.,
-                unit: Unit::Kj,
-                factors: vec![
-                    Factor {
-                        op: Operator::Multiply,
-                        val: -7.,
-                    },
-                    Factor {
-                        op: Operator::Divide,
-                        val: -2.,
-                    },
-                ].into_boxed_slice(),
-            })
-        );
+        assert_eq!(Expr::parse("15kj"), Ok(expr!((15.) Kj)));
+        assert_eq!(Expr::parse("50.2kJ"), Ok(expr!((50.2) Kj)));
+        assert_eq!(Expr::parse("   15  kcal  "), Ok(expr!((15.) Kcal)));
+        assert_eq!(Expr::parse("17.7kcal/10*3"), Ok(expr!((17.7) Kcal / (10.) * (3.))));
+        assert_eq!(Expr::parse("  15 KJ * 7  / 9.5 "), Ok(expr!((15.) Kj * (7.) / (9.5))));
+        assert_eq!(Expr::parse("-17.7kcal/-10*-3"), Ok(expr!((-17.7) Kcal / (-10.) * (-3.))));
+        assert_eq!(Expr::parse("  -15kj * -7 / -2  "), Ok(expr!((-15.) Kj * (-7.) / (-2.))));
     }
 
     #[test]
     fn expr_calc() {
-        assert_eq!(
-            Expr {
-                base: 15.,
-                unit: Unit::Kj,
-                factors: Default::default(),
-            }.calc(Unit::Kj),
-            15.
-        );
-        assert_eq!(
-            Expr {
-                base: 50.2,
-                unit: Unit::Kj,
-                factors: Default::default(),
-            }.calc(Unit::Kcal),
-            50.2 / KJ_PER_KCAL
-        );
-        assert_eq!(
-            Expr {
-                base: 15.,
-                unit: Unit::Kcal,
-                factors: Default::default(),
-            }.calc(Unit::Kj),
-            15. * KJ_PER_KCAL
-        );
-        assert_eq!(
-            Expr {
-                base: 17.7,
-                unit: Unit::Kcal,
-                factors: vec![
-                    Factor {
-                        op: Operator::Divide,
-                        val: 10.,
-                    },
-                    Factor {
-                        op: Operator::Multiply,
-                        val: 3.,
-                    },
-                ].into_boxed_slice(),
-            }.calc(Unit::Kcal),
-            17.7 / 10. * 3.
-        );
-        assert_eq!(
-            Expr {
-                base: 15.,
-                unit: Unit::Kj,
-                factors: vec![
-                    Factor {
-                        op: Operator::Multiply,
-                        val: 7.,
-                    },
-                    Factor {
-                        op: Operator::Divide,
-                        val: 9.5,
-                    },
-                ].into_boxed_slice(),
-            }.calc(Unit::Kj),
-            15. * 7. / 9.5
-        );
+        assert_eq!(expr!((15.) Kj).calc(Unit::Kj), 15.);
+        assert_eq!(expr!((50.2) Kj).calc(Unit::Kcal), 50.2 / KJ_PER_KCAL);
+        assert_eq!(expr!((15.) Kcal).calc(Unit::Kj), 15. * KJ_PER_KCAL);
+        assert_eq!(expr!((17.7) Kcal / (10.) * (3.)).calc(Unit::Kcal), 17.7 / 10. * 3.);
+        assert_eq!(expr!((15.) Kj * (7.) / (9.5)).calc(Unit::Kj), 15. * 7. / 9.5);
     }
 }
