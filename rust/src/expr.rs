@@ -16,14 +16,7 @@ impl Expr {
     pub fn parse(input: &str) -> Result<Self, ()> {
         match parser::expr().parse(input) {
             Ok((expr, "")) => Ok(expr),
-            Ok((_, remaining)) => {
-                eprintln!("remaining: '{}'", remaining);
-                Err(())
-            }
-            Err(e) => {
-                eprintln!("error: {}", e);
-                Err(())
-            }
+            _ => Err(()),
         }
     }
 
