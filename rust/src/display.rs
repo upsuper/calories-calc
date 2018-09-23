@@ -55,8 +55,8 @@ mod tests {
 
     #[test]
     fn test_rounded_float_display() {
-        assert_eq!(Rounded(15.5).display_string(), Ok("16".to_string()));
-        assert_eq!(Rounded(-21.7).display_string(), Ok("-22".to_string()));
-        assert_eq!(Rounded(1000000000.).display_string(), Ok("1000000000".to_string()));
+        assert_eq!(Rounded(15.5).display_string(), "16".to_string());
+        assert_eq!(Rounded(-21.7).display_string(), "-22".to_string());
+        assert_eq!(Rounded(1000000000.).display_string(), "1000000000".to_string());
     }
 }
