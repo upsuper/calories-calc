@@ -91,6 +91,7 @@ struct Factor {
 
 impl Display for Factor {
     fn display(&self, output: &mut impl fmt::Write) -> fmt::Result {
+        output.write_char(' ')?;
         self.op.display(output)?;
         output.write_char(' ')?;
         Rounded(self.val).display(output)
