@@ -1,5 +1,6 @@
+use crate::display::{Display, Rounded};
 use crate::expr::{Expr, Unit};
-use crate::wasm_utils::UnwrapAbort;
+use crate::utils::UnwrapAbort;
 use lazy_static::lazy_static;
 use wasm_bindgen::prelude::*;
 use wasm_bindgen::JsCast;
@@ -89,9 +90,9 @@ fn add_item() -> Result<(), JsValue> {
         .import_node_with_deep(RECORD.content().as_ref(), true)?
         .unchecked_into();
     let expr_elem = new_record.query_selector(".expr")?.unwrap_abort();
-    Node::from(expr_elem).set_text_content(Some(&format!("{}", expr)));
+    Node::from(expr_elem).set_text_content(Some(&expr.display_string()));
     let value_elem = new_record.query_selector(".value")?.unwrap_abort();
-    Node::from(value_elem).set_text_content(Some(&format!("{} {}", value, UNIT)));
+    Node::from(value_elem).set_text_content(Some(&display_value_with_unit(value)));
     RECORDS.insert_before(new_record.as_ref(), RECORDS.first_child().as_ref())?;
     update_total(value);
     Ok(())
@@ -110,7 +111,7 @@ fn adjust_item(row: Element, delta: f32) -> Result<(), JsValue> {
     let expr = expr_elem.text_content().unwrap_abort();
     let mut expr = Expr::parse(&expr).unwrap_abort();
     expr.adjust_factor(delta);
-    expr_elem.set_text_content(Some(&format!("{}", expr)));
+    expr_elem.set_text_content(Some(&expr.display_string()));
 
     let value_elem = Node::from(row.query_selector(".value")?.unwrap_abort());
     let value = value_elem.text_content().unwrap_abort();
@@ -120,7 +121,7 @@ fn adjust_item(row: Element, delta: f32) -> Result<(), JsValue> {
     if (value - 0.0).abs() < 1e-5 {
         row.remove();
     } else {
-        value_elem.set_text_content(Some(&format!("{} {}", value, UNIT)));
+        value_elem.set_text_content(Some(&display_value_with_unit(value)));
         update_total(value);
     }
     Ok(())
@@ -130,5 +131,13 @@ fn update_total(diff: f32) {
     let current_total = TOTAL.text_content().unwrap_abort();
     let current_total = Expr::parse(&current_total).unwrap_abort().calc(UNIT);
     let new_total = current_total + diff;
-    TOTAL.set_text_content(Some(&format!("{} {}", new_total, UNIT)));
+    TOTAL.set_text_content(Some(&display_value_with_unit(new_total)));
+}
+
+fn display_value_with_unit(val: f32) -> String {
+    let mut output = String::new();
+    Rounded(val).display(&mut output).unwrap_abort();
+    output.push(' ');
+    UNIT.display(&mut output).unwrap_abort();
+    output
 }

@@ -1,7 +1,8 @@
 mod parser;
 
 use combine::parser::Parser;
-use std::fmt::{self, Display, Formatter};
+use crate::display::{Display, Rounded};
+use std::fmt;
 
 const KJ_PER_KCAL: f32 = 4.2;
 
@@ -56,10 +57,12 @@ impl Expr {
 }
 
 impl Display for Expr {
-    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
-        write!(f, "{:.0} {}", self.base, self.unit)?;
+    fn display(&self, output: &mut impl fmt::Write) -> fmt::Result {
+        Rounded(self.base).display(output)?;
+        output.write_char(' ')?;
+        self.unit.display(output)?;
         for factor in self.factors.iter() {
-            write!(f, " {}", factor)?;
+            factor.display(output)?;
         }
         Ok(())
     }
@@ -72,8 +75,8 @@ pub enum Unit {
 }
 
 impl Display for Unit {
-    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
-        f.write_str(match self {
+    fn display(&self, output: &mut impl fmt::Write) -> fmt::Result {
+        output.write_str(match self {
             Unit::Kj => "kJ",
             Unit::Kcal => "kcal",
         })
@@ -87,8 +90,10 @@ struct Factor {
 }
 
 impl Display for Factor {
-    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
-        write!(f, "{} {:.0}", self.op, self.val)
+    fn display(&self, output: &mut impl fmt::Write) -> fmt::Result {
+        self.op.display(output)?;
+        output.write_char(' ')?;
+        Rounded(self.val).display(output)
     }
 }
 
@@ -99,10 +104,10 @@ enum Operator {
 }
 
 impl Display for Operator {
-    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
-        f.write_str(match self {
-            Operator::Multiply => "*",
-            Operator::Divide => "/",
+    fn display(&self, output: &mut impl fmt::Write) -> fmt::Result {
+        output.write_char(match self {
+            Operator::Multiply => '*',
+            Operator::Divide => '/',
         })
     }
 }
