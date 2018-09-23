@@ -36,7 +36,10 @@ impl Display for Rounded<f32> {
         let mut buf = [0u8; BUF_SIZE];
         for (i, slot) in buf.iter_mut().enumerate().rev() {
             if num == 0 {
-                return output.write_str(str::from_utf8(&buf[i + 1..]).unwrap_abort());
+                // This is safe because we only put in b'0'~b'9' in the buffer.
+                return output.write_str(unsafe {
+                    str::from_utf8_unchecked(&buf[i + 1..])
+                });
             }
             *slot = b'0' + (num % 10) as u8;
             num /= 10;
