@@ -55,8 +55,8 @@ fn add_event_listeners() -> Result<(), JsValue> {
         }
         let class_name = target.class_name();
         match class_name.as_str() {
-            "inc" => increase_item(target.closest("tr")?.unwrap()),
-            "dec" => decrease_item(target.closest("tr")?.unwrap()),
+            "inc" => increase_item(target.closest(".record")?.unwrap()),
+            "dec" => decrease_item(target.closest(".record")?.unwrap()),
             _ => Ok(()),
         }
     })?;
