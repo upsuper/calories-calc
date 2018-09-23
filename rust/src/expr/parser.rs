@@ -1,7 +1,7 @@
 use super::{Expr, Factor, Operator, Unit};
 use combine::{
     parser::{
-        char::{digit, spaces, string_cmp},
+        byte::{bytes_cmp, digit, spaces},
         choice::{choice, optional},
         combinator::r#try,
         item::item,
@@ -11,7 +11,7 @@ use combine::{
     Parser,
 };
 
-pub fn expr<'a>() -> impl Parser<Input = &'a str, Output = Expr> {
+pub fn expr<'a>() -> impl Parser<Input = &'a [u8], Output = Expr> {
     (
         spaces(),
         float(),
@@ -27,13 +27,13 @@ pub fn expr<'a>() -> impl Parser<Input = &'a str, Output = Expr> {
         })
 }
 
-fn float<'a>() -> impl Parser<Input = &'a str, Output = f32> {
+fn float<'a>() -> impl Parser<Input = &'a [u8], Output = f32> {
     (
-        optional(item('-')),
+        optional(item(b'-')),
         recognize(skip_many1(digit())),
-    ).map(|(neg, digits): (_, &str)| {
+    ).map(|(neg, digits): (_, &[u8])| {
         let mut result = 0.;
-        for digit in digits.as_bytes() {
+        for digit in digits {
             let digit = digit - b'0';
             result = result * 10. + digit as f32;
         }
@@ -44,26 +44,26 @@ fn float<'a>() -> impl Parser<Input = &'a str, Output = f32> {
     })
 }
 
-fn unit<'a>() -> impl Parser<Input = &'a str, Output = Unit> {
+fn unit<'a>() -> impl Parser<Input = &'a [u8], Output = Unit> {
     choice((
-        string_cmp_ignore_ascii_case("kj").map(|_| Unit::Kj),
-        string_cmp_ignore_ascii_case("kcal").map(|_| Unit::Kcal),
+        bytes_cmp_ignore_ascii_case(b"kj").map(|_| Unit::Kj),
+        bytes_cmp_ignore_ascii_case(b"kcal").map(|_| Unit::Kcal),
     ))
 }
 
-fn string_cmp_ignore_ascii_case<'a>(
-    s: &'static str,
-) -> impl Parser<Input = &'a str, Output = &'static str> {
-    r#try(string_cmp(s, |l, r| l.eq_ignore_ascii_case(&r)))
+fn bytes_cmp_ignore_ascii_case<'a>(
+    s: &'static [u8],
+) -> impl Parser<Input = &'a [u8], Output = &'static [u8]> {
+    r#try(bytes_cmp(s, |l, r| l.eq_ignore_ascii_case(&r)))
 }
 
-fn factor<'a>() -> impl Parser<Input = &'a str, Output = Factor> {
+fn factor<'a>() -> impl Parser<Input = &'a [u8], Output = Factor> {
     (operator(), spaces(), float()).map(|(op, _, val)| Factor { op, val })
 }
 
-fn operator<'a>() -> impl Parser<Input = &'a str, Output = Operator> {
+fn operator<'a>() -> impl Parser<Input = &'a [u8], Output = Operator> {
     choice((
-        item('*').map(|_| Operator::Multiply),
-        item('/').map(|_| Operator::Divide),
+        item(b'*').map(|_| Operator::Multiply),
+        item(b'/').map(|_| Operator::Divide),
     ))
 }

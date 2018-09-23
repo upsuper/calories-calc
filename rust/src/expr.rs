@@ -15,8 +15,8 @@ pub struct Expr {
 
 impl Expr {
     pub fn parse(input: &str) -> Result<Self, ()> {
-        match parser::expr().parse(input) {
-            Ok((expr, "")) => Ok(expr),
+        match parser::expr().parse(input.as_bytes()) {
+            Ok((expr, b"")) => Ok(expr),
             _ => Err(()),
         }
     }
