@@ -11,7 +11,7 @@ crate-type = ["cdylib"]
 lto = true
 
 [dependencies]
-combine = "3.5.2"
+combine = { version = "3.5.2", default-features = false }
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]
 lazy_static = "1.1.0"
