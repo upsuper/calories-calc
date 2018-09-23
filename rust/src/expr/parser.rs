@@ -1,13 +1,12 @@
 use super::{Expr, Factor, Operator, Unit};
 use combine::{
-    error::StringStreamError,
     parser::{
         char::{digit, spaces, string_cmp},
         choice::{choice, optional},
         combinator::r#try,
         item::item,
         range::recognize,
-        repeat::{many, skip_many, skip_many1},
+        repeat::{many, skip_many1},
     },
     Parser,
 };
@@ -29,11 +28,20 @@ pub fn expr<'a>() -> impl Parser<Input = &'a str, Output = Expr> {
 }
 
 fn float<'a>() -> impl Parser<Input = &'a str, Output = f32> {
-    recognize((
+    (
         optional(item('-')),
-        skip_many1(digit()),
-        optional((item('.'), skip_many(digit()))),
-    )).and_then(|s: &str| s.parse().map_err(|_| StringStreamError::UnexpectedParse))
+        recognize(skip_many1(digit())),
+    ).map(|(neg, digits): (_, &str)| {
+        let mut result = 0.;
+        for digit in digits.as_bytes() {
+            let digit = digit - b'0';
+            result = result * 10. + digit as f32;
+        }
+        if neg.is_some() {
+            result = -result;
+        }
+        result
+    })
 }
 
 fn unit<'a>() -> impl Parser<Input = &'a str, Output = Unit> {

@@ -142,19 +142,19 @@ mod tests {
     #[test]
     fn expr_parsing() {
         assert_eq!(Expr::parse("15kj"), Ok(expr!((15.) Kj)));
-        assert_eq!(Expr::parse("50.2kJ"), Ok(expr!((50.2) Kj)));
+        assert_eq!(Expr::parse("50kJ"), Ok(expr!((50.) Kj)));
         assert_eq!(Expr::parse("   15  kcal  "), Ok(expr!((15.) Kcal)));
         assert_eq!(
-            Expr::parse("17.7kcal/10*3"),
-            Ok(expr!((17.7) Kcal / (10.) * (3.)))
+            Expr::parse("18kcal/10*3"),
+            Ok(expr!((18.) Kcal / (10.) * (3.)))
         );
         assert_eq!(
-            Expr::parse("  15 KJ * 7  / 9.5 "),
-            Ok(expr!((15.) Kj * (7.) / (9.5)))
+            Expr::parse("  15 KJ * 7  / 9 "),
+            Ok(expr!((15.) Kj * (7.) / (9.)))
         );
         assert_eq!(
-            Expr::parse("-17.7kcal/-10*-3"),
-            Ok(expr!((-17.7) Kcal / (-10.) * (-3.)))
+            Expr::parse("-17kcal/-10*-3"),
+            Ok(expr!((-17.) Kcal / (-10.) * (-3.)))
         );
         assert_eq!(
             Expr::parse("  -15kj * -7 / -2  "),
