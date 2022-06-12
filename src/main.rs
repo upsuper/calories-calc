@@ -5,7 +5,6 @@ use yew::{classes, html, Component, Context, Html, NodeRef};
 use crate::expr::{Expr, Unit};
 
 mod expr;
-mod utils;
 
 const UNIT: Unit = Unit::Kj;
 
