@@ -1,0 +1,42 @@
+html {
+  font-size: 16px;
+}
+table {
+  width: 100%;
+  max-width: 600px;
+}
+table, input {
+  text-align: right;
+}
+#op_col {
+  width: calc(3.2em + 1ch);
+}
+input, button {
+  border: 1px solid #ddd;
+  height: 2em;
+  box-sizing: border-box;
+  font-size: 80%;
+}
+td {
+  vertical-align: baseline;
+}
+tfoot > tr:last-child > td {
+  padding-top: 6px;
+}
+input {
+  width: 100%;
+}
+input.error {
+  border: 1px solid red;
+}
+button {
+  padding: 0;
+  background: white;
+  width: 2em;
+}
+input, tbody td:first-child, .total {
+  padding-right: 8px;
+}
+td:last-child {
+  text-align: left;
+}

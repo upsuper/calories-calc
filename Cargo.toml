@@ -1,0 +1,11 @@
+[package]
+name = "calories-calc"
+version = "0.2.0"
+license = "GPL-3.0-or-later"
+edition = "2021"
+publish = false
+
+[dependencies]
+combine = "4.6.4"
+web-sys = "0.3.57"
+yew = "0.19.3"
