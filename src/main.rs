@@ -1,6 +1,7 @@
+use std::rc::Rc;
 use web_sys::{HtmlInputElement, KeyboardEvent};
-use yew::html::Scope;
-use yew::{classes, html, Component, Context, Html, NodeRef};
+use yew::{classes, function_component, html};
+use yew::{Callback, Component, Context, Html, NodeRef, Properties};
 
 use crate::expr::{Expr, Unit};
 use crate::state::State;
@@ -64,6 +65,8 @@ impl Component for App {
         let on_keydown =
             link.batch_callback(|e: KeyboardEvent| (e.key() == "Enter").then(|| Message::AddNew));
         let on_add_item = link.callback(|_| Message::AddNew);
+        let on_increase = link.callback(Message::Increase);
+        let on_decrease = link.callback(Message::Decrease);
         html! {
             <table>
                 <colgroup>
@@ -71,7 +74,15 @@ impl Component for App {
                     <col id="op_col"/>
                 </colgroup>
                 <tbody>
-                    { for self.state.iter_items().map(|(id, e)| self.view_item(link, *id, e)) }
+                    { for self.state.iter_items().map(|(id, expr)| html! {
+                        <ItemView
+                            key={*id}
+                            id={*id}
+                            expr={expr.clone()}
+                            on_increase={on_increase.clone()}
+                            on_decrease={on_decrease.clone()}
+                        />
+                    }) }
                 </tbody>
                 <tfoot>
                     <tr>
@@ -95,18 +106,28 @@ impl Component for App {
     }
 }
 
-impl App {
-    fn view_item(&self, link: &Scope<Self>, id: usize, expr: &Expr) -> Html {
-        let on_increase = link.callback(move |_| Message::Increase(id));
-        let on_decrease = link.callback(move |_| Message::Decrease(id));
-        html! {
-            <tr key={id}>
-                <td>{ format!("{} = {:.0} {}", expr, expr.calc(UNIT), UNIT) }</td>
-                <td>
-                    <button onclick={on_increase}>{ "+" }</button>
-                    <button onclick={on_decrease}>{ "-" }</button>
-                </td>
-            </tr>
-        }
+#[derive(Properties, PartialEq)]
+struct ItemViewProps {
+    id: usize,
+    expr: Rc<Expr>,
+    on_increase: Callback<usize>,
+    on_decrease: Callback<usize>,
+}
+
+#[function_component(ItemView)]
+fn item_view(props: &ItemViewProps) -> Html {
+    let id = props.id;
+    let on_increase = props.on_increase.clone();
+    let on_increase = move |_| on_increase.emit(id);
+    let on_decrease = props.on_decrease.clone();
+    let on_decrease = move |_| on_decrease.emit(id);
+    html! {
+        <tr>
+            <td>{ format!("{} = {:.0} {}", props.expr, props.expr.calc(UNIT), UNIT) }</td>
+            <td>
+                <button onclick={on_increase}>{ "+" }</button>
+                <button onclick={on_decrease}>{ "-" }</button>
+            </td>
+        </tr>
     }
 }
