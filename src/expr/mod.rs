@@ -5,6 +5,7 @@ use std::fmt;
 use std::fmt::Write;
 
 const KJ_PER_KCAL: f32 = 4.2;
+const EPSILON: f32 = 1e-5;
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct Expr {
@@ -19,6 +20,12 @@ impl Expr {
             Ok((expr, b"")) => Ok(expr),
             _ => Err(()),
         }
+    }
+
+    pub fn is_zero(&self) -> bool {
+        self.factors
+            .iter()
+            .any(|f| f.op == Operator::Multiply && (f.val - 0.).abs() < EPSILON)
     }
 
     pub fn calc(&self, unit: Unit) -> f32 {
@@ -50,7 +57,7 @@ impl Expr {
             op: Operator::Multiply,
             val: delta + 1.,
         });
-        if (new_factor.val - 1.).abs() >= 1e-5 {
+        if (new_factor.val - 1.).abs() >= EPSILON {
             self.factors.push(new_factor);
         }
     }

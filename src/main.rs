@@ -3,8 +3,10 @@ use yew::html::Scope;
 use yew::{classes, html, Component, Context, Html, NodeRef};
 
 use crate::expr::{Expr, Unit};
+use crate::state::State;
 
 mod expr;
+mod state;
 
 const UNIT: Unit = Unit::Kj;
 
@@ -14,10 +16,7 @@ fn main() {
 
 #[derive(Default)]
 struct App {
-    /// Next item id to be pushed along with the expression.
-    next_id: usize,
-    /// List of items consist of an id and an expression.
-    items: Vec<(usize, Expr)>,
+    state: State,
     /// Reference to the input element for expression.
     input_ref: NodeRef,
     /// Whether the latest input has error on parsing.
@@ -43,33 +42,24 @@ impl Component for App {
             Message::AddNew => {
                 let input = self.input_ref.cast::<HtmlInputElement>().unwrap();
                 let _ = input.focus();
-                match Expr::parse(&input.value()) {
-                    Ok(expr) => {
-                        self.input_error = false;
-                        input.set_value("");
-                        self.items.push((self.next_id, expr));
-                        self.next_id += 1;
-                    }
-                    Err(_) => self.input_error = true,
+                let result = self.state.add_new_item(&input.value());
+                self.input_error = result.is_err();
+                if result.is_ok() {
+                    input.set_value("");
                 }
             }
             Message::Increase(id) => {
-                self.find_expr_by_id_mut(id).unwrap().1.adjust_factor(1.);
+                self.state.increase_item(id);
             }
             Message::Decrease(id) => {
-                let (idx, expr) = self.find_expr_by_id_mut(id).unwrap();
-                expr.adjust_factor(-1.);
-                let new_value = expr.calc(UNIT).round();
-                if (new_value - 0.).abs() < 1e-5 {
-                    self.items.remove(idx);
-                }
+                self.state.decrease_item(id);
             }
         }
         true
     }
 
     fn view(&self, ctx: &Context<Self>) -> Html {
-        let total: f32 = self.items.iter().map(|(_, e)| e.calc(UNIT)).sum();
+        let total = self.state.total(UNIT);
         let link = ctx.link();
         let on_keydown =
             link.batch_callback(|e: KeyboardEvent| (e.key() == "Enter").then(|| Message::AddNew));
@@ -81,7 +71,7 @@ impl Component for App {
                     <col id="op_col"/>
                 </colgroup>
                 <tbody>
-                    { for self.items.iter().map(|(id, e)| self.view_item(link, *id, e)) }
+                    { for self.state.iter_items().map(|(id, e)| self.view_item(link, *id, e)) }
                 </tbody>
                 <tfoot>
                     <tr>
@@ -106,13 +96,6 @@ impl Component for App {
 }
 
 impl App {
-    fn find_expr_by_id_mut(&mut self, id: usize) -> Option<(usize, &mut Expr)> {
-        self.items
-            .iter_mut()
-            .enumerate()
-            .find_map(|(idx, (i, e))| (*i == id).then(|| (idx, e)))
-    }
-
     fn view_item(&self, link: &Scope<Self>, id: usize, expr: &Expr) -> Html {
         let on_increase = link.callback(move |_| Message::Increase(id));
         let on_decrease = link.callback(move |_| Message::Decrease(id));
