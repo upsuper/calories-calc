@@ -1,5 +1,5 @@
 use std::rc::Rc;
-use web_sys::{HtmlInputElement, KeyboardEvent};
+use web_sys::{HtmlDivElement, HtmlInputElement, KeyboardEvent};
 use yew::{classes, function_component, html};
 use yew::{Callback, Component, Context, Html, NodeRef, Properties};
 
@@ -18,6 +18,7 @@ fn main() {
 #[derive(Default)]
 struct App {
     state: State,
+    scrollable_ref: NodeRef,
     /// Reference to the input element for expression.
     input_ref: NodeRef,
     /// Whether the latest input has error on parsing.
@@ -68,41 +69,45 @@ impl Component for App {
         let on_increase = link.callback(Message::Increase);
         let on_decrease = link.callback(Message::Decrease);
         html! {
-            <table>
-                <colgroup>
-                    <col id="expr_col"/>
-                    <col id="op_col"/>
-                </colgroup>
-                <tbody>
-                    { for self.state.iter_items().map(|(id, expr)| html! {
-                        <ItemView
-                            key={*id}
-                            id={*id}
-                            expr={expr.clone()}
-                            on_increase={on_increase.clone()}
-                            on_decrease={on_decrease.clone()}
-                        />
-                    }) }
-                </tbody>
-                <tfoot>
-                    <tr>
-                        <td class="total">{ format!("Total: {} {}", total, UNIT) }</td>
-                        <td/>
-                    </tr>
-                    <tr>
-                        <td>
-                            <input
-                                ref={self.input_ref.clone()}
-                                class={classes!(self.input_error.then(|| "error"))}
-                                placeholder="985kJ / 6 * 2"
-                                onkeydown={on_keydown}
+            <div class="root">
+                <div ref={self.scrollable_ref.clone()} class="scrollable">
+                    <ul class="items">
+                        { for self.state.iter_items().map(|(id, expr)| html! {
+                            <ItemView
+                                key={*id}
+                                id={*id}
+                                expr={expr.clone()}
+                                on_increase={on_increase.clone()}
+                                on_decrease={on_decrease.clone()}
                             />
-                        </td>
-                        <td><button onclick={on_add_item}>{ "+" }</button></td>
-                    </tr>
-                </tfoot>
-            </table>
+                        }) }
+                    </ul>
+                </div>
+                <div class="total">
+                    <div class="expr">
+                        { format!("Total: {} {}", total, UNIT) }
+                    </div>
+                    <div class="controls"/>
+                </div>
+                <div class="input">
+                    <input
+                        ref={self.input_ref.clone()}
+                        class={classes!(self.input_error.then(|| "error"))}
+                        placeholder="985kJ / 6 * 2"
+                        onkeydown={on_keydown}
+                    />
+                    <div class="controls">
+                        <button onclick={on_add_item}>{ "+" }</button>
+                    </div>
+                </div>
+            </div>
         }
+    }
+
+    fn rendered(&mut self, _ctx: &Context<Self>, _first_render: bool) {
+        let scrollable = self.scrollable_ref.cast::<HtmlDivElement>().unwrap();
+        let max_scroll_top = scrollable.scroll_height() - scrollable.client_height();
+        scrollable.set_scroll_top(max_scroll_top);
     }
 }
 
@@ -122,12 +127,14 @@ fn item_view(props: &ItemViewProps) -> Html {
     let on_decrease = props.on_decrease.clone();
     let on_decrease = move |_| on_decrease.emit(id);
     html! {
-        <tr>
-            <td>{ format!("{} = {:.0} {}", props.expr, props.expr.calc(UNIT), UNIT) }</td>
-            <td>
+        <li class="item">
+            <div class="expr">
+                { format!("{} = {:.0} {}", props.expr, props.expr.calc(UNIT), UNIT) }
+            </div>
+            <div class="controls">
                 <button onclick={on_increase}>{ "+" }</button>
                 <button onclick={on_decrease}>{ "-" }</button>
-            </td>
-        </tr>
+            </div>
+        </li>
     }
 }
