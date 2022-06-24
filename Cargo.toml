@@ -9,3 +9,9 @@ publish = false
 combine = "4.6.4"
 web-sys = { version = "0.3.57", features = ["HtmlDivElement"] }
 yew = "0.19.3"
+
+[profile.release]
+panic = "abort"
+codegen-units = 1
+opt-level = "z"
+lto = true
