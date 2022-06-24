@@ -51,7 +51,11 @@ jobs:
 
       - name: Build page
         shell: bash
-        run: trunk build --release
+        run: trunk build --release --public-url=public-url
+
+      - name: Fix path
+        shell: bash
+        run: sed -i 's#/public-url/#./#g' ./dist/index.html
 
       - name: Deploy
         uses: peaceiris/actions-gh-pages@v3
