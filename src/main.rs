@@ -1,5 +1,6 @@
 use std::rc::Rc;
-use web_sys::{HtmlDivElement, HtmlInputElement, KeyboardEvent};
+use wasm_bindgen::JsCast;
+use web_sys::{HtmlButtonElement, HtmlDivElement, HtmlInputElement, KeyboardEvent, MouseEvent};
 use yew::{classes, function_component, html};
 use yew::{Callback, Component, Context, Html, NodeRef, Properties};
 
@@ -10,6 +11,8 @@ mod expr;
 mod state;
 
 const UNIT: Unit = Unit::Kj;
+const BACKSPACE_KEY: &str = "\u{8}";
+const ENTER_KEY: &str = "\r";
 
 fn main() {
     yew::start_app::<App>();
@@ -29,6 +32,7 @@ enum Message {
     AddNew,
     Increase(usize),
     Decrease(usize),
+    Input(String),
 }
 
 impl Component for App {
@@ -39,10 +43,10 @@ impl Component for App {
         Default::default()
     }
 
-    fn update(&mut self, _ctx: &Context<Self>, msg: Self::Message) -> bool {
+    fn update(&mut self, ctx: &Context<Self>, msg: Self::Message) -> bool {
         match msg {
             Message::AddNew => {
-                let input = self.input_ref.cast::<HtmlInputElement>().unwrap();
+                let input = self.input();
                 let _ = input.focus();
                 let result = self.state.add_new_item(&input.value());
                 self.input_error = result.is_err();
@@ -56,6 +60,32 @@ impl Component for App {
             Message::Decrease(id) => {
                 self.state.decrease_item(id);
             }
+            Message::Input(c) => {
+                let input = self.input();
+                let mut value: String = input.value();
+                match c.as_str() {
+                    ENTER_KEY => ctx.link().send_message(Message::AddNew),
+                    BACKSPACE_KEY => {
+                        let mut value = value.as_str().trim_end();
+                        if let Some((idx, _)) = value.char_indices().next_back() {
+                            value = &value[0..idx].trim_end();
+                        }
+                        input.set_value(value);
+                    }
+                    c => {
+                        if !value.is_empty()
+                            && !value.ends_with(|c: char| c.is_ascii_whitespace())
+                            && (!c.starts_with(|c: char| c.is_ascii_digit())
+                                || !value.ends_with(|c: char| c.is_ascii_digit()))
+                        {
+                            value.push(' ');
+                        }
+                        value.push_str(c);
+                        input.set_value(&value);
+                    }
+                }
+                return false;
+            }
         }
         true
     }
@@ -68,6 +98,7 @@ impl Component for App {
         let on_add_item = link.callback(|_| Message::AddNew);
         let on_increase = link.callback(Message::Increase);
         let on_decrease = link.callback(Message::Decrease);
+        let on_input = link.callback(Message::Input);
         html! {
             <div class="root">
                 <div ref={self.scrollable_ref.clone()} class="scrollable">
@@ -94,12 +125,14 @@ impl Component for App {
                         ref={self.input_ref.clone()}
                         class={classes!(self.input_error.then(|| "error"))}
                         placeholder="985kJ / 6 * 2"
+                        inputmode="none"
                         onkeydown={on_keydown}
                     />
                     <div class="controls">
                         <button onclick={on_add_item}>{ "+" }</button>
                     </div>
                 </div>
+                <Keypad on_input={on_input}/>
             </div>
         }
     }
@@ -108,6 +141,12 @@ impl Component for App {
         let scrollable = self.scrollable_ref.cast::<HtmlDivElement>().unwrap();
         let max_scroll_top = scrollable.scroll_height() - scrollable.client_height();
         scrollable.set_scroll_top(max_scroll_top);
+    }
+}
+
+impl App {
+    fn input(&self) -> HtmlInputElement {
+        self.input_ref.cast::<HtmlInputElement>().unwrap()
     }
 }
 
@@ -137,4 +176,46 @@ fn item_view(props: &ItemViewProps) -> Html {
             </div>
         </li>
     }
+}
+
+#[derive(Properties, PartialEq)]
+struct KeypadProps {
+    on_input: Callback<String>,
+}
+
+#[function_component(Keypad)]
+fn keypad(props: &KeypadProps) -> Html {
+    let on_input = props.on_input.clone();
+    let on_click = move |e: MouseEvent| {
+        e.target()
+            .and_then(|t| t.dyn_into::<HtmlButtonElement>().ok())
+            .map(|e| on_input.emit(e.value()));
+    };
+    let buttons = [
+        ("1", "1", "one"),
+        ("2", "2", "two"),
+        ("3", "3", "three"),
+        ("4", "4", "four"),
+        ("5", "5", "five"),
+        ("6", "6", "six"),
+        ("7", "7", "seven"),
+        ("8", "8", "eight"),
+        ("9", "9", "nine"),
+        ("0", "0", "zero"),
+        ("kJ", "kJ", "kj"),
+        ("kcal", "kcal", "kcal"),
+        ("*", "*", "mul"),
+        ("/", "/", "div"),
+        (BACKSPACE_KEY, "\u{2190}", "bs"),
+        (ENTER_KEY, "\u{21b5}", "cr"),
+    ];
+    let buttons = buttons
+        .iter()
+        .map(|&(value, content, area)| {
+            let style = format!("grid-area: {area}");
+            let onclick = on_click.clone();
+            html! { <button {value} {style} {onclick}>{content}</button> }
+        })
+        .collect::<Html>();
+    html! { <div class="keyboard">{ buttons }</div> }
 }

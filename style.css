@@ -1,5 +1,5 @@
 html {
-  font-size: 16px;
+  font-size: 20px;
 }
 
 html, body {
@@ -15,11 +15,8 @@ ul, li {
   list-style: none;
 }
 
-input, button {
+button {
   border: 1px solid #ddd;
-  height: 2em;
-  box-sizing: border-box;
-  font-size: 80%;
 }
 
 .root {
@@ -60,9 +57,21 @@ input, button {
   text-align: right;
 }
 
+.input > input,
+.controls > button {
+  height: 2em;
+  line-height: 2em;
+  box-sizing: border-box;
+  font-size: 80%;
+}
+
 .input > input {
   flex: 1;
   text-align: right;
+}
+
+.input > input:focus {
+  outline: 0 none;
 }
 
 .controls {
@@ -77,4 +86,23 @@ input, button {
 
 .controls > button:not(:last-child) {
   margin-right: 1ex;
+}
+
+.keyboard {
+  display: grid;
+  grid-template-areas:
+    "one    two   three mul"
+    "four   five  six   div"
+    "seven  eight nine  bs"
+    "kj     zero  kcal  cr";
+  gap: 8px;
+  grid-template-columns: repeat(4, calc((100% - 3 * 8px) / 4));
+}
+
+.keyboard > button {
+  background: white;
+  padding: 0;
+  font-size: 80%;
+  line-height: 3em;
+  height: 3em;
 }
