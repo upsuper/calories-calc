@@ -73,7 +73,7 @@ impl Component for App {
                     BACKSPACE_KEY => {
                         let mut value = value.as_str().trim_end();
                         if let Some((idx, _)) = value.char_indices().next_back() {
-                            value = &value[0..idx].trim_end();
+                            value = value[0..idx].trim_end();
                         }
                         input.set_value(value);
                     }
@@ -215,9 +215,12 @@ struct KeypadProps {
 fn keypad(props: &KeypadProps) -> Html {
     let on_input = props.on_input.clone();
     let on_click = move |e: MouseEvent| {
-        e.target()
+        if let Some(elem) = e
+            .target()
             .and_then(|t| t.dyn_into::<HtmlButtonElement>().ok())
-            .map(|e| on_input.emit(e.value()));
+        {
+            on_input.emit(elem.value());
+        }
     };
     let buttons = [
         ("1", "1", "one"),
