@@ -15,7 +15,7 @@ ul, li {
   list-style: none;
 }
 
-button {
+input, button {
   border: 1px solid #ddd;
 }
 
@@ -72,6 +72,10 @@ button {
 
 .input > input:focus {
   outline: 0 none;
+}
+
+.input > input.error {
+  border-color: red;
 }
 
 .controls {
