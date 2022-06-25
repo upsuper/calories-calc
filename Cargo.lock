@@ -31,6 +31,7 @@ name = "calories-calc"
 version = "0.2.0"
 dependencies = [
  "combine",
+ "gloo-storage",
  "wasm-bindgen",
  "web-sys",
  "yew",

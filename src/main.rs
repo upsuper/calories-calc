@@ -1,3 +1,4 @@
+use gloo_storage::{SessionStorage, Storage};
 use std::rc::Rc;
 use wasm_bindgen::JsCast;
 use web_sys::{HtmlButtonElement, HtmlDivElement, HtmlInputElement, KeyboardEvent, MouseEvent};
@@ -40,7 +41,9 @@ impl Component for App {
     type Properties = ();
 
     fn create(_ctx: &Context<Self>) -> Self {
-        Default::default()
+        let mut app = Self::default();
+        let _ = app.restore_session();
+        app
     }
 
     fn update(&mut self, ctx: &Context<Self>, msg: Self::Message) -> bool {
@@ -87,6 +90,7 @@ impl Component for App {
                 return false;
             }
         }
+        self.save_session();
         true
     }
 
@@ -147,6 +151,23 @@ impl Component for App {
 impl App {
     fn input(&self) -> HtmlInputElement {
         self.input_ref.cast::<HtmlInputElement>().unwrap()
+    }
+
+    fn restore_session(&mut self) -> Result<(), ()> {
+        let items: Vec<String> = SessionStorage::get("items").map_err(|_| ())?;
+        for item in items {
+            self.state.add_new_item(&item)?;
+        }
+        Ok(())
+    }
+
+    fn save_session(&self) {
+        let items = self
+            .state
+            .iter_items()
+            .map(|(_, expr)| expr.to_string())
+            .collect::<Vec<_>>();
+        let _ = SessionStorage::set("items", items);
     }
 }
 
