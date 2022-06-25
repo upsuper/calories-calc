@@ -116,7 +116,7 @@ impl Component for App {
                 </div>
                 <div class="total">
                     <div class="expr">
-                        { format!("Total: {} {}", total, UNIT) }
+                        { format!("Total: {:.0} {}", total, UNIT) }
                     </div>
                     <div class="controls"/>
                 </div>
