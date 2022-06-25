@@ -33,6 +33,7 @@ enum Message {
     AddNew,
     Increase(usize),
     Decrease(usize),
+    Clear,
     Input(String),
 }
 
@@ -63,6 +64,7 @@ impl Component for App {
             Message::Decrease(id) => {
                 self.state.decrease_item(id);
             }
+            Message::Clear => self.state.clear(),
             Message::Input(c) => {
                 let input = self.input();
                 let mut value: String = input.value();
@@ -99,6 +101,7 @@ impl Component for App {
         let link = ctx.link();
         let on_keydown =
             link.batch_callback(|e: KeyboardEvent| (e.key() == "Enter").then(|| Message::AddNew));
+        let on_clear = link.callback(|_| Message::Clear);
         let on_add_item = link.callback(|_| Message::AddNew);
         let on_increase = link.callback(Message::Increase);
         let on_decrease = link.callback(Message::Decrease);
@@ -122,7 +125,11 @@ impl Component for App {
                     <div class="expr">
                         { format!("Total: {:.0} {}", total, UNIT) }
                     </div>
-                    <div class="controls"/>
+                    <div class="controls">
+                        if !self.state.is_empty() {
+                            <button onclick={on_clear}>{ "\u{2715}" }</button>
+                        }
+                    </div>
                 </div>
                 <div class="input">
                     <input

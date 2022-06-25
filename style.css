@@ -45,11 +45,8 @@ input, button {
 
 .item, .total, .input {
   display: flex;
-  gap: 8px;
-}
-
-.item {
   align-items: center;
+  gap: 8px;
 }
 
 .expr {

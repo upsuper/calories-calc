@@ -10,6 +10,10 @@ pub struct State {
 }
 
 impl State {
+    pub fn is_empty(&self) -> bool {
+        self.items.is_empty()
+    }
+
     pub fn iter_items(&self) -> impl Iterator<Item = &(usize, Rc<Expr>)> {
         self.items.iter()
     }
@@ -50,5 +54,10 @@ impl State {
             .iter()
             .enumerate()
             .find_map(|(idx, (i, e))| (*i == id).then(|| (idx, e)))
+    }
+
+    pub fn clear(&mut self) {
+        self.items.clear();
+        self.next_id = 0;
     }
 }
