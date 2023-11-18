@@ -100,7 +100,7 @@ impl Component for App {
         let total = self.state.total(UNIT);
         let link = ctx.link();
         let on_keydown =
-            link.batch_callback(|e: KeyboardEvent| (e.key() == "Enter").then(|| Message::AddNew));
+            link.batch_callback(|e: KeyboardEvent| (e.key() == "Enter").then_some(Message::AddNew));
         let on_clear = link.callback(|_| Message::Clear);
         let on_add_item = link.callback(|_| Message::AddNew);
         let on_increase = link.callback(Message::Increase);
@@ -134,7 +134,7 @@ impl Component for App {
                 <div class="input">
                     <input
                         ref={self.input_ref.clone()}
-                        class={classes!(self.input_error.then(|| "error"))}
+                        class={classes!(self.input_error.then_some("error"))}
                         placeholder="985kJ / 6 * 2"
                         inputmode="none"
                         onkeydown={on_keydown}

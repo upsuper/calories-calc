@@ -53,7 +53,7 @@ impl State {
         self.items
             .iter()
             .enumerate()
-            .find_map(|(idx, (i, e))| (*i == id).then(|| (idx, e)))
+            .find_map(|(idx, (i, e))| (*i == id).then_some((idx, e)))
     }
 
     pub fn clear(&mut self) {
