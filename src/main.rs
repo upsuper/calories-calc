@@ -16,7 +16,7 @@ const BACKSPACE_KEY: &str = "\u{8}";
 const ENTER_KEY: &str = "\r";
 
 fn main() {
-    yew::start_app::<App>();
+    yew::Renderer::<App>::new().render();
 }
 
 #[derive(Default)]
